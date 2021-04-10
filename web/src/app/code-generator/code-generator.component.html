@@ -1,0 +1,39 @@
+<mat-card class="photo-card">
+  <mat-card-header>
+    <mat-card-title>Code Generator</mat-card-title>
+    <mat-card-subtitle>Renerate a new Extra Credit code</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="centered">
+      <p>
+      <mat-slide-toggle
+        [checked]="isMasking"
+        color="primary"
+      >Mask code labels</mat-slide-toggle>
+      </p>
+      <p>
+        <button [disabled]="isLoading" mat-fab (click)="getCode()">GO</button>
+      </p>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+  <div *ngFor="let code of codes; index as i; first as isFirst; trackBy: trackBy">
+    <mat-card class="photo-card">
+      <mat-card-header>
+        <mat-card-title>
+          <span *ngIf="!isMasking" >{{code.code}}</span>
+          <span *ngIf="isMasking" >{{code.maskedCode}}</span>
+        </mat-card-title>
+        <mat-card-subtitle>
+          <span>{{code.createdString}}</span>
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-actions>
+        <button [cdkCopyToClipboard]="code.code" mat-button>Copy</button>
+        <button (click)="clear(code)" mat-button>Clear</button>
+        <button color="warn" (click)="invalidate(code)" mat-button>Invalidate</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+

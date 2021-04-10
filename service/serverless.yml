@@ -1,0 +1,193 @@
+service: extra-credit-machine
+frameworkVersion: '2'
+app: extra-credit-machine
+org: chelseyful
+useDotenv: true
+plugins:
+  - serverless-offline
+  - serverless-webpack
+  - serverless-prune-plugin
+package:
+  individually: true
+custom:
+  stage: ${opt:stage, 'dev'}
+  project: extra-credit-machine
+  webpack:
+    webpackConfig: 'webpack.config.js'
+    includeModules: true
+    packager: 'npm'
+    excludeFiles: src/**/*.test.js
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  memorySize: 128
+  timeout: 30
+  versionFunctions: false
+  stage: ${opt:stage, 'dev'}
+  apiGateway:
+    shouldStartNameWithService: true
+  environment:
+    STAGE: ${self:custom.stage}
+    CODE_TABLE: ${self:custom.project}-${self:custom.stage}-code
+    USER_TABLE: ${self:custom.project}-${self:custom.stage}-user
+    JWT_ARN: !Ref jwtToken
+    CAPTCHA_TOKEN: REDACTED
+    CAPTCHA_KEY: REDACTED
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "Fn::GetAtt": [ CodeTable, Arn ]
+        - !Join
+          - ''
+          - - "Fn::GetAtt": [ CodeTable, Arn ]
+            - '/index/pid-index'
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:GetItem
+      Resource:
+        - "Fn::GetAtt": [ UserTable, Arn ]
+    - Effect: Allow
+      Action:
+        - secretsmanager:DescribeSecret
+        - secretsmanager:GetSecretValue
+      Resource:
+        - !Ref jwtToken
+resources:
+  Resources:
+    CodeTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.project}-${self:custom.stage}-code
+        AttributeDefinitions:
+          - AttributeName: code
+            AttributeType: S
+          - AttributeName: pid
+            AttributeType: S
+          - AttributeName: updated
+            AttributeType: N
+        KeySchema:
+          - AttributeName: code
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: pid-index
+            KeySchema:
+              - AttributeName: pid
+                KeyType: HASH
+            Projection:
+              NonKeyAttributes:
+                - updated
+              ProjectionType: INCLUDE
+    UserTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.project}-${self:custom.stage}-user
+        AttributeDefinitions:
+          - AttributeName: uname
+            AttributeType: S
+        KeySchema:
+          - AttributeName: uname
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    jwtToken:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: ${self:custom.project}-${self:custom.stage}-jwt
+        Description: JWT Secret Key
+        GenerateSecretString:
+          ExcludeLowercase: false
+          ExcludeNumbers: false
+          ExcludePunctuation: true
+          ExcludeUppercase: false
+          PasswordLength: 128
+          RequireEachIncludedType: true
+functions:
+  echo:
+    name: ${self:custom.project}-${self:custom.stage}-echo
+    handler: ./src/echo.handler
+    events:
+      - http:
+          path: /echo
+          method: any
+          cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 60
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: '^[Bb]earer ([A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*)$'
+            type: token
+      - http:
+          path: /echo/{proxy+}
+          method: any
+          cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 60
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: '^[Bb]earer ([A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*)$'
+            type: token
+  tokenget:
+    name: ${self:custom.project}-${self:custom.stage}-token-post
+    handler: ./src/token.post
+    events:
+      - http:
+          path: /token
+          method: POST
+          cors: true
+  codeget:
+    name: ${self:custom.project}-${self:custom.stage}-code-get
+    handler: ./src/code.get
+    events:
+      - http:
+          path: /code
+          method: GET
+          cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 60
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: '^[Bb]earer ([A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*)$'
+            type: token
+  codedelete:
+    name: ${self:custom.project}-${self:custom.stage}-code-delete
+    handler: ./src/code.remove
+    events:
+      - http:
+          path: /code/{code}
+          method: DELETE
+          cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 60
+            identitySource: method.request.header.Authorization
+            identityValidationExpression: '^[Bb]earer ([A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*)$'
+            type: token
+  codepost:
+    name: ${self:custom.project}-${self:custom.stage}-code-post
+    handler: ./src/code.post
+    events:
+      - http:
+          path: /code
+          method: POST
+          cors: true
+  pidget:
+    name: ${self:custom.project}-${self:custom.stage}-pid-get
+    handler: ./src/pid.get
+    events:
+      - http:
+          path: /pid/{proxy+}
+          method: GET
+          cors: true
+  authorizer:
+    name: ${self:custom.project}-${self:custom.stage}-authorizer
+    handler: ./src/authorizer.handler

@@ -1,0 +1,20 @@
+{
+  "serverlessIDE.telemetry.enableTelemetry": false,
+  "javascript.format.enable": true,
+  "javascript.format.insertSpaceAfterCommaDelimiter": true,
+  "javascript.format.placeOpenBraceOnNewLineForFunctions": false,
+  "javascript.format.placeOpenBraceOnNewLineForControlBlocks": false,
+  "javascript.format.semicolons": "insert",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "tslint.alwaysShowRuleFailuresAsWarnings": true,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true,
+    "**/.expo/**": true,
+    "**/.serverless/**": true,
+    "**/.expo-shared/**": true
+  },
+  "scss.lint.ieHack": "error",
+  "scss.lint.universalSelector": "warning",
+}

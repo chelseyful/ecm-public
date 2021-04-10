@@ -1,0 +1,17 @@
+<mat-tab-group mat-align-tabs="center" backgroundColor="primary">
+  <mat-tab label="Redeem Code">
+    <div class="content">
+    <cc-code-redeemer></cc-code-redeemer>
+  </div>
+  </mat-tab>
+  <mat-tab label="Query My Codes">
+    <div class="content">
+    <cc-code-reporter></cc-code-reporter>
+  </div>
+  </mat-tab>
+  <mat-tab *ngIf="hasAuth" label="Generate Codes">
+    <div class="content">
+      <cc-code-generator></cc-code-generator>
+    </div>
+  </mat-tab>
+</mat-tab-group>

@@ -1,0 +1,37 @@
+<mat-card class="photo-card">
+    <mat-card-header>
+      <mat-card-title>Log In</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="hasError !== ''" class="centered">
+        <i class="fas fa-heart-broken fa-10x"></i>
+        <h1 [textContent]="hasError"></h1>
+      <button mat-fab color="warn" (click)="reset()">Retry</button>
+    </div>
+      <div *ngIf="isLoading === false && hasError === ''">
+        <form [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+          <p>
+            <mat-form-field appearance="outline">
+              <mat-label>User</mat-label>
+              <input matInput placeholder="" formControlName="user" required>
+              <mat-hint></mat-hint>
+            </mat-form-field>
+          </p>
+          <p>
+            <mat-form-field appearance="outline">
+              <mat-label>Password</mat-label>
+              <input type="password" matInput placeholder="" formControlName="secret" required>
+              <mat-hint></mat-hint>
+            </mat-form-field>
+          </p>
+          <p>
+            <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">Log In</button>
+          </p>
+        </form>
+      </div>
+      <div class="centered" *ngIf="isLoading == true && hasError === ''">
+        <mat-spinner></mat-spinner>
+        <h1>Loading...</h1>
+      </div>
+    </mat-card-content>
+  </mat-card>

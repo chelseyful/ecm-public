@@ -1,0 +1,51 @@
+<mat-card class="photo-card">
+  <mat-card-header>
+    <mat-card-title>Redeem a Code</mat-card-title>
+    <mat-card-subtitle>Register an extra credit code to your posting ID</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <!-- OPEN and LOCKED -->
+    <div *ngIf="state === 0">
+      <form [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+        <p>
+          <mat-form-field appearance="outline">
+            <mat-label>Posting ID</mat-label>
+            <input matInput placeholder="1234-567" formControlName="pid" required>
+            <mat-hint>Find your posting ID in the myASU profile tab</mat-hint>
+          </mat-form-field>
+        </p>
+        <p>
+          <mat-form-field appearance="outline">
+            <mat-label>Extra Credit Code</mat-label>
+            <input matInput placeholder="CQDX1234-9P389000" formControlName="ecCode" required>
+            <mat-hint>Enter the code provided during lecture</mat-hint>
+          </mat-form-field>
+        </p>
+        <p>
+          <mat-slide-toggle
+            formControlName="remember_pid"
+            color="primary"
+          >Remember my Posting ID</mat-slide-toggle>
+        </p>
+        <p>
+          <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid || state === 1">Claim code</button>
+        </p>
+      </form>
+    </div>
+    <!-- OPEN and LOCKED -->
+    <div class="centered" *ngIf="state === 2">
+      <mat-spinner></mat-spinner>
+      <h1>Loading...</h1>
+    </div>
+    <!-- RESULTS -->
+    <div *ngIf="state === 3" class="centered">
+        <i *ngIf="!result.error" class="fas fa-thumbs-up fa-10x"></i>
+        <i *ngIf="result.error" class="fas fa-thumbs-down fa-10x"></i>
+        <h1 *ngIf="!result.error">Success!</h1>
+        <h1 *ngIf="result.error">Uh oh...</h1>
+      <p *ngIf="result.error" [innerText]="result.error">
+      </p>
+      <button mat-fab color="primary" (click)="reset()">Reset</button>
+    </div>
+  </mat-card-content>
+</mat-card>

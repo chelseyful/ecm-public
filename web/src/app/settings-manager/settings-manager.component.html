@@ -1,0 +1,45 @@
+<div *ngIf="!isDeveloper" class="centered container">
+    <i class="fas fa-exclamation-triangle fa-10x"></i>
+    <h1>Developer options ahead</h1>
+    <p>Changing these settings could prevent this site from working correctly, or send your data to/from non-production endpoints.</p>
+    <button mat-raised-button color="warn" (click)="makeDeveloper()">Continue</button>
+</div>
+
+<mat-card *ngIf="isDeveloper" class="photo-card">
+    <mat-card-header>
+        <mat-card-title>Settings</mat-card-title>
+        <mat-card-subtitle>Site-wide settings are shown here</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+        <div class="settings_list">
+            <div class="settings_item">
+                <h2>API Key</h2>
+                <p>Some of the tools on this page require an API key before the supporting server will accept a connection. If you do not have an API key, you probably do not need one.</p>
+                <mat-form-field appearance="fill">
+                    <input matInput placeholder="" formControlName="api_key">
+                </mat-form-field>
+            </div>
+            <div class="settings_item">
+                <h2>API version</h2>
+                <p>The tools on this site use versioned APIs (Application Programming Interface). This setting allows the version being used to change at runtime, allowing for 'Testing In Production'. In the vast majority of cases, leave this at its default value.</p>
+                <mat-form-field appearance="fill">
+                    <input matInput placeholder="" formControlName="api_version">
+                </mat-form-field>
+            </div>
+            <div class="settings_item">
+                <h2>API Endpoint prefix</h2>
+                <p>Allows for attaching to alternate API nodes at runtime.</p>
+                <mat-form-field appearance="fill">
+                    <input matInput placeholder="" formControlName="api_prefix">
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="centered">
+            <button mat-fab color="primary" aria-label="Save" type="submit" [disabled]="!form.valid">
+                <i class="fas fa-save fa-2x"></i>
+            </button>
+        </div>
+    </form>
+    </mat-card-content>
+</mat-card>

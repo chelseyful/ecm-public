@@ -1,0 +1,53 @@
+<div class="centered">
+  <div>
+    <mat-card class="photo-card">
+      <mat-card-header>
+        <mat-card-title>Code Report</mat-card-title>
+        <mat-card-subtitle>Query the database for a list of codes for the provided Posting ID</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+          <p>
+            <mat-form-field appearance="outline">
+              <mat-label>Posting ID</mat-label>
+              <input matInput placeholder="1234-567" formControlName="pid" required>
+              <mat-hint>Find your posting ID in the myASU profile tab</mat-hint>
+            </mat-form-field>
+          </p>
+          <p>
+            <button mat-raised-button color="primary" type="submit"
+              [disabled]="!form.valid || isLoading">Query</button>
+          </p>
+        </form>
+        <div class="centered" *ngIf="isLoading">
+          <mat-spinner></mat-spinner>
+          <h1>Loading...</h1>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="codes.length > 0 && !isLoading" class="table-container mat-elevation-z8">
+    <table mat-table [dataSource]="codes" class="mat-elevation-z8">
+
+      <!--- Note that these columns can be defined in any order.
+            The actual rendered columns are set as a property on the row definition" -->
+
+      <!-- Position Column -->
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef> Code </th>
+        <td mat-cell *matCellDef="let element"> {{element.code}} </td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="updated">
+        <th mat-header-cell *matHeaderCellDef> Claimed At </th>
+        <td mat-cell *matCellDef="let element"> {{element.updatedString}} </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+    <p><b>NOTE: </b>Timestamps are shown in your current time zone</p>
+  </div>
+</div>
