@@ -15,8 +15,6 @@ import { Settings } from '../etc/settings';
 import {
     verify as jwtVerify
 } from 'jsonwebtoken';
-import 'source-map-support/register';
-
 interface endpointElement {
     path: string,
     method: HttpVerb,
@@ -78,18 +76,21 @@ export const handler: APIGatewayTokenAuthorizerHandler = async (event, _context)
         typeof (callerToken) === 'string' &&
         Settings.token_validator.test(callerToken)
     ) {
-        callerToken = Settings.token_validator.exec(callerToken)[1];
+        let parsedToken = Settings.token_validator.exec(callerToken);
+        callerToken = parsedToken && parsedToken[1] ?
+            parsedToken[1] : '';
     } else {
-        callerToken = null;
+        callerToken = '';
     }
 
     // Obtain JWT key
     // ... only if token appears to be balid (save money on bad requests!)
-    if (typeof(callerToken) === "string") {
+    if (typeof (callerToken) === "string") {
         try {
-            let jwtToken = await getSecret(jwtArn);
-            if (jwtToken.SecretString) {
-                jwtSecret = jwtToken.SecretString
+            let jwtToken = jwtArn ?
+                await getSecret(jwtArn) : null;
+            if (jwtToken!.SecretString) {
+                jwtSecret = jwtToken!.SecretString
             } else {
                 jwtSecret = '';
             }

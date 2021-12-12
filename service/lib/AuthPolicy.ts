@@ -15,8 +15,8 @@ export class AuthPolicy {
      */
     static pathRegex = new RegExp('^[/.a-zA-Z0-9-\*]+$')
 
-    private allowMethods = []
-    private denyMethods = []
+    private allowMethods: ApiMethod[] = []
+    private denyMethods: ApiMethod[] = []
     private restApiId: string
     private region: string
     private stage: string
@@ -76,7 +76,7 @@ export class AuthPolicy {
             cleanedResource = resource.substring(1, resource.length);
         }
         var resourceArn =
-        `arn:aws:execute-api:${this.region}:${this.awsAccountId}:${this.restApiId}/${this.stage}/${verb}/${cleanedResource}`;
+            `arn:aws:execute-api:${this.region}:${this.awsAccountId}:${this.restApiId}/${this.stage}/${verb}/${cleanedResource}`;
 
         if (effect === PolicyEffect.allow) {
             this.allowMethods.push({

@@ -1,9 +1,8 @@
 'use strict';
 const db = require("../lib/database");
 import { v4 as uuidv4 } from 'uuid';
-const cryptoRandomString = require('crypto-random-string');
-import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
-import 'source-map-support/register';
+import { random as cryptoRandomString } from '@supercharge/strings';
+import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 
 var response: APIGatewayProxyResult = {
   statusCode: 200,
@@ -28,9 +27,13 @@ export const get: APIGatewayProxyHandler = async (event, _context) => {
   };
 
   // Generate a new code
-  let code = cryptoRandomString({ length: 16, type: 'alphanumeric' })
+  //let code = cryptoRandomString({ length: 16, type: 'alphanumeric' });
+  let code = cryptoRandomString(16);
   code = code.toUpperCase();
-  code = code.substr(0, 8) + '-' + code.substr(8);
+  let codeParts = /.{8}.{8}/.exec(code);
+  if (codeParts && codeParts[1] && codeParts[1]) {
+    code = codeParts[1] + '-' + codeParts[2];
+  }
   newCode.code = code;
 
 
@@ -64,7 +67,8 @@ export const get: APIGatewayProxyHandler = async (event, _context) => {
 }
 
 export const remove: APIGatewayProxyHandler = async (event, _context) => {
-  const qCode = event.pathParameters.code || '';
+  const qCode = null === event.pathParameters ?
+    '' : event.pathParameters.code || '';
 
   // return error if UUID invalid
   if (!(/^[A-Z0-9]{8}-[A-Z0-9]{8}$/.test(qCode))) {
@@ -74,22 +78,22 @@ export const remove: APIGatewayProxyHandler = async (event, _context) => {
   }
 
   let dbResult = await db.call("delete",
-      {
-        TableName: process.env.CODE_TABLE,
-        Key: {
-          code: qCode
-        }
+    {
+      TableName: process.env.CODE_TABLE,
+      Key: {
+        code: qCode
       }
-    );
-    console.log(dbResult);
-    return response;
+    }
+  );
+  console.log(dbResult);
+  return response;
 }
 
 export const post: APIGatewayProxyHandler = async (event, _context) => {
 
   var body = null;
   try {
-    body = JSON.parse(event.body);
+    if (event && event.body) body = JSON.parse(event.body);
   } catch (error) {
     body = null;
   }
@@ -144,7 +148,7 @@ export const post: APIGatewayProxyHandler = async (event, _context) => {
   }
 
   // If we have gotten this far, claim the code
-  var updateResult = await db.call("update", {
+  await db.call("update", {
     TableName: process.env.CODE_TABLE,
     Key: {
       'code': body.code
@@ -158,6 +162,6 @@ export const post: APIGatewayProxyHandler = async (event, _context) => {
   });
 
   response.statusCode = 200;
-  response.body = JSON.stringify({'uuid': dbResult.Item.uuid});
+  response.body = JSON.stringify({ 'uuid': dbResult.Item.uuid });
   return response;
 }

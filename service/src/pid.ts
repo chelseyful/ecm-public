@@ -1,7 +1,6 @@
 'use strict';
 const db = require("../lib/database");
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
-import 'source-map-support/register';
 
 var response: APIGatewayProxyResult = {
   statusCode: 200,
@@ -16,7 +15,7 @@ var response: APIGatewayProxyResult = {
 }
 
 export const get: APIGatewayProxyHandler = async (event, _context) => {
-  const qPid = event.pathParameters.proxy || '';
+  const qPid = event!.pathParameters!.proxy || '';
 
   // Validate requested PID
   if (!(/^[0-9]{4}-[0-9]{3}$/.test(qPid))) {

@@ -11,7 +11,6 @@ import {
   APIGatewayProxyHandler,
   APIGatewayProxyResult
 } from 'aws-lambda';
-import 'source-map-support/register';
 
 var response: APIGatewayProxyResult = {
   statusCode: 200,
@@ -25,16 +24,17 @@ var response: APIGatewayProxyResult = {
   }
 }
 
-const jwtArn = process.env['IS_OFFLINE'] === 'true' ?
-  'arn:aws:secretsmanager:us-east-1:410734219022:secret:extra-credit-machine-dev-jwt-DvSsxv' :
-  process.env['JWT_ARN'];
+const jwtArn: string = process.env['IS_OFFLINE'] === 'true' ?
+  'offline-key-arn' :
+  (process.env['JWT_ARN'] || "");
 
 export const post: APIGatewayProxyHandler = async (event, _context) => {
 
   // Parse request body; hopefully caller gave us some JSON
   var body = null;
   try {
-    body = JSON.parse(event.body);
+    body = null === event || null === event.body ?
+      null : JSON.parse(event.body);
   } catch (error) {
     body = null;
   }
@@ -105,10 +105,10 @@ export const post: APIGatewayProxyHandler = async (event, _context) => {
       {
         algorithm: "HS512"
       });
-      response.statusCode = 200;
-      response.body = JSON.stringify({
-        Authorization: signedToken
-      });
+    response.statusCode = 200;
+    response.body = JSON.stringify({
+      Authorization: signedToken
+    });
   } else {
 
     // password hashes did not match
